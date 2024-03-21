@@ -1,0 +1,13 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: full-access-role-binding
+  namespace: wordpress
+subjects:
+- kind: ServiceAccount
+  name: rundeck-sa
+  namespace: wordpress
+roleRef:
+  kind: Role
+  name: full-access-role
+  apiGroup: rbac.authorization.k8s.io

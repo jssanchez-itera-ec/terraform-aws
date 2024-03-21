@@ -1,0 +1,8 @@
+---
+- hosts: localhost
+  # become: true
+  # become_user: root  
+  roles:
+  - ../roles/aws-s3-csi-driver
+  vars:
+    cluster: "arn:aws:eks:eu-south-2:105054799343:cluster/eks-preprod-genaia"

@@ -1,0 +1,18 @@
+---
+- hosts: localhost
+  vars:
+    context_genaia: "arn:aws:eks:eu-south-2:105054799343:cluster/eks-prod-genaia"
+    environment: "Prod"
+  tasks:    
+    - name: Establecer el contexto de Kubernetes
+      k8s_config:
+        name: "{{ context_genaia }}"
+      delegate_to: localhost
+
+    - name: Crear Namespace para Wordpress
+      gather_facts: no
+      k8s:
+        state: present
+        definition: "{{ lookup('file', item) }}"
+      with_fileglob:
+        - "../kubernetes/{{ environment }}/wordpress-namespace.yaml"

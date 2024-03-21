@@ -1,0 +1,7 @@
+Subsystem sftp internal-sftp
+Match User www-data
+    ForceCommand internal-sftp
+    AllowTcpForwarding yes
+    X11Forwarding yes
+    PasswordAuthentication yes
+

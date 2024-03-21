@@ -1,0 +1,26 @@
+FROM ubuntu:latest
+
+# Instalar paquetes necesarios
+RUN apt-get update && apt-get install -y openssh-server sudo
+
+# Crear usuario www-data si no existe y configurar permisos
+RUN id -u www-data &>/dev/null || (useradd -m -d /home/www-data -s /bin/bash -u 33 www-data \
+    && chown -R www-data:www-data /home/www-data)
+
+# Establecer contraseña para el usuario www-data (en este caso, 'password')
+RUN echo 'www-data:ef8a~F)K{0d9:?h+' | chpasswd
+
+# Configurar SSH para SFTP
+RUN mkdir /var/run/sshd \
+    && mkdir -p /home/www-data/.ssh \
+    && chmod 700 /home/www-data/.ssh \
+    && chown www-data:www-data /home/www-data/.ssh
+
+# Copiar archivo de configuración SSH
+COPY sshd_config /etc/ssh/sshd_config
+
+# Exponer puerto 22 para SSH
+EXPOSE 22
+
+# Iniciar servicio SSH
+CMD ["/usr/sbin/sshd", "-D"]

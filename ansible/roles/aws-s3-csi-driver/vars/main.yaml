@@ -1,0 +1,7 @@
+---
+eks_name: "eks-preprod-genaia"
+eks_region: "eu-south-2"
+keos_kubeconfig_path: "~/.kube/config"
+ROLE_NAME: "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+AWS_ACCESS_KEY_ID: "ls"
+AWS_SECRET_ACCESS_KEY: ""

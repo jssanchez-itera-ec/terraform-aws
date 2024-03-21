@@ -1,0 +1,26 @@
+  apiVersion: networking.k8s.io/v1
+  kind: Ingress
+  metadata:
+    name: ingress-wordpress
+    namespace: wordpress
+    annotations:
+      #kubernetes.io/ingress.class: nginx
+      nginx.ingress.kubernetes.io/proxy-body-size: "500m"    
+      service.beta.kubernetes.io/aws-load-balancer-internal: "false"
+  spec:
+    ingressClassName: nginx
+    rules:
+      - host: www.generativeaiassociation.org 
+        http:
+          paths:
+            - pathType: Prefix
+              backend:
+                service:
+                  name: wordpress
+                  port:
+                    number: 80
+              path: /
+    tls: 
+      - hosts:
+          - www.generativeaiassociation.org
+        secretName: tls-genaia           

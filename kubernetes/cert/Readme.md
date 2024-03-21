@@ -1,0 +1,1 @@
+k -n wordpress create secret generic generativeaiassociation --from-file=./generativeaiassociation.crt --from-file=./generativeaiassociation.key

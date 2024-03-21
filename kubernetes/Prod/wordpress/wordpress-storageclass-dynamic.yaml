@@ -1,0 +1,12 @@
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: efs-storageclass
+  namespace: wordpress
+provisioner: efs.csi.aws.com
+parameters:
+  provisioningMode: efs-ap
+  fileSystemId: fs-063b04b6e81cc1549
+  directoryPerms: "772"
+  basePath: "/dynamic_provisioning" # optional
+allowVolumeExpansion: true

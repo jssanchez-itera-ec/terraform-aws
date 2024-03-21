@@ -1,0 +1,76 @@
+---
+# tasks file for aws-ebs-csi-driver
+
+- name: Get cluster from .kube/config
+  shell: "kubectl config current-context | cut -d \"@\" -f2"
+  register: currentcluster
+
+- name: Confirm we are working with correct cluster {{ cluster }}
+  shell: "ls"
+  failed_when: "currentcluster.stdout != cluster" 
+
+- name: Check if eksctl command is installed, https://docs.aws.amazon.com/eks/latest/userguide/eksctl.html
+  shell: "eksctl version"
+
+- name: Get oidc URL
+  shell: "aws eks describe-cluster --name {{ eks_name }} --region {{ eks_region }} --query \"cluster.identity.oidc.issuer\" --output text"
+  register: oidc
+
+- name: SA - Create Service Account S3 #Crear cuenta de servicio para el controlador CSI de Amazon EBS
+  community.aws.eks_service_account:
+    name: s3-csi-driver-sa
+    namespace: kube-system
+    cluster_name: "{{ eks_name }}"  # Asegúrate de tener la variable eks_name definida
+    attach_policy_arns:
+      - "{{ ROLE_ARN }}"  
+    approve: true
+    role_name: "{{ ROLE_NAME }}"
+    region: "{{ eks_region }}"  
+
+- name: Create IAM Role - Extract oidc from URL
+  ansible.builtin.debug:
+    msg: "{{ oidc.stdout.split('/')[-1] }}"
+  register: oidcId
+
+- name: Create IAM Role - Get account ID
+  amazon.aws.aws_caller_info:
+  register: caller_info
+
+- name: Create IAM Role - Create role AmazonEKS_S3_CSI_DriverRole from template
+  community.aws.iam_role:
+    name: AmazonEKS_S3_CSI_DriverRole
+    assume_role_policy_document: "{{ lookup('template', 'aws-s3-csi-driver-trust-policy.json') }}"
+  register: AmazonEKS_S3_CSI_DriverRole
+
+- name: Attatch IAM Policy to the IAM Role - AmazonS3CSIDriverPolicy
+  shell: "aws iam attach-role-policy --policy-arn arn:aws:iam::aws:policy/service-role/AmazonS3CSIDriverPolicy --role-name AmazonEKS_EBS_CSI_DriverRole"
+
+#- name: Get {{ cluster }} KMS ARN
+#  community.aws.aws_kms_info:
+#    region: "{{ eks_region }}"
+#    filters:
+#      "tag:name": "{{ eks_name }}"
+#  register: eks_kms_key_id
+#
+#- name: Create IAM Policy - Create KMS_Key_For_Encryption_On_EBS_Policy policy
+#  community.aws.iam_managed_policy:
+#    policy_name: KMS_Key_For_Encryption_On_EBS_Policy 
+#    state: present
+#    policy: "{{ lookup('template', 'kms-key-for-encryption-on-ebs.json.j2') }}"
+#
+#- name: Attatch IAM Policy to the IAM Role - AmazonEKS_EBS_CSI_DriverRole
+#  shell: "aws iam attach-role-policy --policy-arn arn:aws:iam::{{ caller_info.account }}:policy/KMS_Key_For_Encryption_On_EBS_Policy --role-name AmazonEKS_EBS_CSI_DriverRole"
+#
+#- name: Add the Amazon EBS CSI add-on
+#  shell: "aws eks create-addon --cluster-name {{eks_name}} --region {{ eks_region }} --addon-name aws-ebs-csi-driver --service-account-role-arn {{AmazonEKS_EBS_CSI_DriverRole.arn}}"
+#
+#- name: Clone Amazon EBS Container Storage Interface (CSI) driver repo
+#  ansible.builtin.git:
+#    repo: https://github.com/kubernetes-sigs/aws-ebs-csi-driver.git
+#    dest: /tmp/aws-ebs-csi-driver
+
+- name: Create Storage Class for EKS
+  kubernetes.core.k8s:
+    kubeconfig: "{{ keos_kubeconfig_path }}"
+    state: present
+    definition: "{{ lookup('file', '/tmp/aws-ebs-csi-driver/examples/kubernetes/dynamic-provisioning/manifests/storageclass.yaml') }}"

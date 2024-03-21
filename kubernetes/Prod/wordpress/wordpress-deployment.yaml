@@ -1,0 +1,61 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wordpress
+  namespace: wordpress
+  labels:
+    app: wordpress
+spec:
+  ports:
+    - port: 80
+  selector:
+    app: wordpress
+    tier: frontend
+  type: ClusterIP
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wordpress
+  namespace: wordpress
+  labels:
+    app: wordpress
+spec:
+  selector:
+    matchLabels:
+      app: wordpress
+      tier: frontend
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: wordpress
+        tier: frontend
+    spec:
+      securityContext:
+        fsGroup: 33  # ID del grupo www-data    
+      containers:
+      - image: wordpress:6.4-php8.2
+        name: wordpress
+        volumeMounts:
+          - name: persistent-storage
+            mountPath: /var/www/html
+        envFrom:
+        - configMapRef:
+            name: wordpress-db-config
+        env:
+        - name: WORDPRESS_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mariadb-secret
+              key: mariadb-password     
+        ports:
+          - containerPort: 80
+            name: wordpress
+      volumes:
+        - name: persistent-storage
+          persistentVolumeClaim:
+            claimName: efs-pvc-wordpress
