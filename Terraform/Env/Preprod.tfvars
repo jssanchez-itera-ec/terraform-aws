@@ -1,7 +1,7 @@
 ### Providers ###
 aws_credentials = {
-    aws_region    = "eu-south-2"  
-    profile       = "genia"
+    aws_region    = "us-east-1"  
+    profile       = "usarboleda"
     path = "terraform-preprod.tfstate"
 }
 
@@ -153,12 +153,12 @@ security_groups = {
 eks = {
   eks-preprod-genaia = {
     name                    = "eks-preprod-genaia"
-    role_arn                = "arn:aws:iam::105054799343:role/EKSGENAIAClusterRole"
+    role_arn                = "arn:aws:iam::644263771432:role/ssanchez-ClusterRoleEKS-Itera"
     vpc_name                = "vpc-preprod"
     cluster_security_group_id = "sg_cluster_eks"
     endpoint_private_access = "true"
-    endpoint_public_access  = "false"
-    version-eks             = "1.28"
+    endpoint_public_access  = "true"
+    version-eks             = "1.30"
     subnet_name-a           ={
       subnet_name = "subnet-preprod-pvt-a"
     }
@@ -197,11 +197,11 @@ eks-nodes = {
   m7i_2xlarge = {
     cluster_name    = "eks-preprod-genaia"
     #node_group_name = "eks-preprod-genaia-nodes"
-    node_role_arn   = "arn:aws:iam::105054799343:role/AmazonEKSNodeRole_prod"
+    node_role_arn   = "arn:aws:iam::644263771432:role/ssanchez-NodeRoleEKS-Itera"
     ami_type        = "AL2_x86_64" #Amazon Linux 2
     capacity_type   = "ON_DEMAND" 
     disk_size       = "50"
-    instance_types  = ["m7i.2xlarge"] # 8 CPU / 32 RAM
+    instance_types  = ["t2.medium"] # 4 CPU / 2 RAM
     subnets_name = {
       subnet_name-a = {
         subnet_name = "subnet-preprod-pvt-a"

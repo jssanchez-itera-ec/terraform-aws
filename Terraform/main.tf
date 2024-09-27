@@ -167,9 +167,10 @@ module "EKS_Node_Group" {
     module.Private_Subnets[each.value.subnets_name.subnet_name-b.subnet_name].subnet_id,
     module.Private_Subnets[each.value.subnets_name.subnet_name-c.subnet_name].subnet_id,
   ]
+  depends_on = [ module.EKS_Cluster ]
 }
 
-module "RDS-subnet_group" {
+/*module "RDS-subnet_group" {
   source = "./Modules/05-RDS/01-SG"
   for_each = var.subnet_group
   name =  each.key
@@ -179,9 +180,9 @@ module "RDS-subnet_group" {
     module.Private_Subnets[each.value.subnets_name.subnet_name-c.subnet_name].subnet_id,
   ]
   
-}
+}*/
 
-module "RDS" {
+/*module "RDS" {
   source = "./Modules/05-RDS/02-RDS"
   for_each            = var.rds
   allocated_storage   = each.value.allocated_storage
@@ -196,9 +197,9 @@ module "RDS" {
   backup_retention_period   = each.value.backup_retention_period
   db_subnet_group_name = module.RDS-subnet_group[each.value.db_subnet_group_name].id
   vpc_security_group_ids = module.SG-EKS[each.value.vpc_security_group_ids].id
-}
+}*/
 
-module "Backup-Vault" {
+/*module "Backup-Vault" {
   source = "./Modules/07-Backup/01-Backup-vault"
   for_each = var.backup-vault
   name = each.key
@@ -223,4 +224,4 @@ module "Backup-Selection" {
   plan_id = module.Backup-Plan[each.value.plan_id].id
   db_rds = module.RDS[each.value.db_rds].db_arn
 
-}
+}*/
